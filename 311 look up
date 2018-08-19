@@ -1,0 +1,17 @@
+'''
+python3
+'''
+import pandas
+
+# convert 311 info to dataframe
+with open('311_Call_Center_Service_Requests.csv','r'):
+    thing = pandas.DataFrame.from_csv('311_Call_Center_Service_Requests.csv', sep=',').head(1000).set_index('STREET ADDRESS')
+
+#define list of properties to look up
+prop_list =['8428 NE 109TH PL','5125 BOOTH AVE',"7721 LEE'S SUMMIT RD",'10301 N HARRISON CT']
+
+#apply list to dataframe
+newthing = thing.loc[prop_list]
+
+#return 311 sliced list
+print (newthing)
