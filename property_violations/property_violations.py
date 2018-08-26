@@ -25,18 +25,57 @@ class PropertyViolationCode:
     def is_fence_violation(self):
         return self.code.startswith('NSFENCE')
 
-    @property
-    def severity(self):
-        # TODO: come up with algorithm for determining severity of violation
-        return 1
-
     def __str__(self):
         return 'Code: %s (%s)' % (self.code, self.description)
 
 class PropertyViolationOrdinance:
+    CHAPTER_FENCE = 'Fences and Walls'
+    CHAPTER_NUISANCE = 'Nuisances'
+    CHAPTER_PROPERTY_MAINTENANCE = 'Property Maintenance Code'
+    CHAPTER_SOLID_WASTE = 'Solid Waste'
+    CHAPTER_STREET = 'Streets, Sidewalks and Public Places'
+
     def __init__(self, chapter, ordinance):
         self.chapter = chapter
         self.ordinance = ordinance
+
+    @property
+    def chapter_title(self):
+        title = ''
+
+        if self.chapter == 27:
+            title = PropertyViolationOrdinance.CHAPTER_FENCE
+        elif self.chapter == 48:
+            title = PropertyViolationOrdinance.CHAPTER_NUISANCE
+        elif self.chapter == 56:
+            title = PropertyViolationOrdinance.CHAPTER_PROPERTY_MAINTENANCE
+        elif self.chapter == 62:
+            title = PropertyViolationOrdinance.CHAPTER_SOLID_WASTE
+        elif self.chapter == 64:
+            title = PropertyViolationOrdinance.CHAPTER_STREET
+        else:
+            title = '(Unknown Ordinance Chapter)'
+
+        return title
+
+    @property
+    def severity(self):
+        severity = 0.0
+
+        if self.chapter == 27:
+            severity = 0.6
+        elif self.chapter == 48:
+            severity = 0.3
+        elif self.chapter == 56:
+            severity = 1.0
+        elif self.chapter == 62:
+            severity = 1.0
+        elif self.chapter == 64:
+            severity = 0.6
+        else:
+            severity = 1.0
+
+        return severity
 
     def __str__(self):
         return 'Ordinance: %s (%s)' % (self.chapter, self.ordinance)
@@ -130,7 +169,7 @@ class PropertyViolation:
         )
 
         violation.ordinance = PropertyViolationOrdinance(
-            json_data.get('chapter'),
+            to_int(json_data.get('chapter')),
             json_data.get('ordinance'),
         )
 

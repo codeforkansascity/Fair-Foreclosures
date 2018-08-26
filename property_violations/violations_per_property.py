@@ -66,16 +66,35 @@ def calculate_violation_stats(violations_per_property):
 
     for kiva_pin, violations in violations_per_property.items():
         violation_count = len(violations)
-        if violation_count > 0:
-            avg_severity = sum(v.code.severity for v in violations) / violation_count
-            avg_duration = sum(v.days_open for v in violations) / violation_count
-        else:
-            avg_severity = 0.0
+
+        if violation_count == 0:
+            score = 0.0
             avg_duration = 0.0
+        else:
+            severity_sum = 0.0
+            duration_sum = 0.0
+            open_violations = 0
+
+            for violation in violations:
+                severity_sum += violation.ordinance.severity
+                duration_sum += violation.days_open
+
+                if violation.is_open:
+                    open_violations += 1
+
+            avg_severity = severity_sum / violation_count
+            open_violation_ratio = open_violations / violation_count
+            score = avg_severity * (1 + open_violation_ratio)
+
+            # Normalize score between 0 and 1
+            max_score = 2
+            score = score / max_score
+
+            avg_duration = duration_sum / violation_count
 
         results[kiva_pin] = {
             'violation_count': violation_count,
-            'avg_severity': avg_severity,
+            'score': score,
             'avg_duration': avg_duration,
         }
 
@@ -86,7 +105,7 @@ def write_violation_stats(violation_stats, filename):
     file_output.append([
         'KIVA PIN',
         'Violation Count',
-        'Average Severity',
+        'Property Score',
         'Average Durations',
     ])
 
@@ -94,7 +113,7 @@ def write_violation_stats(violation_stats, filename):
         file_output.append([
             kiva_pin,
             stats['violation_count'],
-            stats['avg_severity'],
+            stats['score'],
             stats['avg_duration'],
         ])
 
