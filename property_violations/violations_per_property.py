@@ -1,4 +1,5 @@
 import csv
+from datetime import datetime, timedelta
 from dateutil.parser import parse
 from property_violations import PropertyViolation
 import sys
@@ -24,6 +25,31 @@ def read_properties(filename):
 
     return processed_rows
 
+def read_legal_brief_violations(filename):
+    # TODO: make this function a little more robust. Right now it's quick &
+    # dirty and relies on the legal brief scoring file being formatted as a
+    # Markdown table with specific column headers.
+    file_rows = []
+    with open(filename, 'r') as f:
+        file_rows = f.readlines()
+
+    first_row = file_rows.pop(0)
+    second_row = file_rows.pop(0)
+    start_idx = first_row.find('Violation Codes') - 1
+    end_idx = first_row.find('|', start_idx)
+
+    violation_codes = set()
+    for row in file_rows:
+        codes = row[start_idx:end_idx].strip().split(',')
+        for code in codes:
+            stripped_code = code.strip()
+            if not stripped_code:
+                continue
+
+            violation_codes.add(stripped_code)
+
+    return list(violation_codes)
+
 def get_violations_per_property(app_token, properties, debug=False):
     results = {}
 
@@ -46,7 +72,11 @@ def get_violations_per_property(app_token, properties, debug=False):
                 else:
                     relevant_violations.append(violation)
 
-        results[reo_property['kiva_pin']] = relevant_violations
+        results[reo_property['kiva_pin']] = {
+            'start_date': reo_property['start_date'],
+            'end_date': reo_property['end_date'],
+            'violations': relevant_violations,
+        }
 
         # DEBUG
         if debug:
@@ -61,42 +91,65 @@ def get_violations_per_property(app_token, properties, debug=False):
 
     return results
 
-def calculate_violation_stats(violations_per_property):
+def calculate_violation_stats(violations_per_property, legal_brief_violation_codes):
     results = {}
 
-    for kiva_pin, violations in violations_per_property.items():
-        violation_count = len(violations)
+    for kiva_pin, property_data in violations_per_property.items():
+        start_date = property_data['start_date']
+        end_date = property_data['end_date'] or datetime.now()
+        days = (end_date - start_date).days
 
-        if violation_count == 0:
-            score = 0.0
+        if not property_data['violations']:
+            avg_daily_score = 0.0
             avg_duration = 0.0
         else:
-            severity_sum = 0.0
-            duration_sum = 0.0
-            open_violations = 0
+            # Calculate an estimated score for the violations that were open during
+            # the given period
+            daily_scores = []
+            for i in range(0, days):
+                day = start_date + timedelta(days=i)
+                day_violation_scores = []
 
-            for violation in violations:
-                severity_sum += violation.ordinance.severity
-                duration_sum += violation.days_open
+                for violation in property_data['violations']:
+                    violation_open_on_day = False
+                    if violation.case_opened >= day:
+                        if violation.is_open:
+                            violation_open_on_day = True
+                        elif violation.case_closed and violation.case_closed >= day:
+                            violation_open_on_day = True
 
-                if violation.is_open:
-                    open_violations += 1
+                    if not violation_open_on_day:
+                        continue
 
-            avg_severity = severity_sum / violation_count
-            open_violation_ratio = open_violations / violation_count
-            score = avg_severity * (1 + open_violation_ratio)
+                    score = 0
 
-            # Normalize score between 0 and 1
-            max_score = 2
-            score = score / max_score
+                    # Violations that are still open are weighted more heavily
+                    if violation.is_open:
+                        score += 2
 
-            avg_duration = duration_sum / violation_count
+                    # Violations that are relevant (based on the criteria extracted
+                    # from the Chicago legal brief) are weighted more heavily
+                    if violation.code.code in legal_brief_violation_codes:
+                        score += 2
+
+                    score += 1
+
+                    day_violation_scores.append(score)
+
+                daily_scores.append(sum(day_violation_scores))
+
+            avg_daily_score = sum(daily_scores) / days
+
+            # Find the average duration of violations open during the given period
+            durations = [v.days_open for v in property_data['violations']]
+            avg_duration = sum(durations) / len(durations)
 
         results[kiva_pin] = {
-            'violation_count': violation_count,
-            'score': score,
+            'violation_count': len(property_data['violations']),
+            'score': avg_daily_score,
             'avg_duration': avg_duration,
         }
+
 
     return results
 
@@ -134,6 +187,7 @@ if __name__ == '__main__':
         sys.exit()
 
     properties = read_properties('example/reo_properties.csv')
+    legal_brief_violation_codes = read_legal_brief_violations('../docs/scoring.md')
     violations = get_violations_per_property(app_token, properties)
-    violation_stats = calculate_violation_stats(violations)
+    violation_stats = calculate_violation_stats(violations, legal_brief_violation_codes)
     write_violation_stats(violation_stats, 'example/results/violation_stats.csv')
