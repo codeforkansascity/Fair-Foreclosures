@@ -1,31 +1,31 @@
-| Issue                                    | Category              |
-| ---------------------------------------- | --------------------- |
-| Trash/debris                             | Curb appeal           |
-| Accumulated mail                         | Curb appeal           |
-| Overgrown grass                          | Curb appeal           |
-| Accumulated dead leaves                  | Curb appeal           |
-| Overgrown or dead shrubbery              | Curb appeal           |
-| Invasive plants                          | Curb appeal           |
-| Dead grass                               | Curb appeal           |
-| Broken or missing mailboxes              | Curb appeal           |
-| Unsecured, broken or boarded doors       | Structural factors    |
-| Damaged steps or rails                   | Structural factors    |
-| Damaged roofs                            | Structural factors    |
-| Damaged fences                           | Structural factors    |
-| Holes in structure                       | Structural factors    |
-| Wood rot                                 | Structural factors    |
-| Trespassing or warning signs             | Signage and Occupancy |
-| Signage marketing property as distressed | Signage and Occupancy |
-| Absence of professional “For Sale” sign  | Signage and Occupancy |
-| Broken or discarded signage              | Signage and Occupancy |
-| Unauthorized occupancy of REO property   | Signage and Occupancy |
-| Graffiti                                 | Paint and siding      |
-| Peeling or chipped paint                 | Paint and siding      |
-| Damaged siding                           | Paint and siding      |
-| Missing or damaged shutters              | Paint and siding      |
-| Missing or out of place gutters          | Gutters               |
-| Broken or hanging gutters                | Gutters               |
-| Water damage                             | Water                 |
-| Presence of mold, algae or discoloration | Water                 |
-| Exposed, damaged or missing utilities    | Utilities             |
-| Everything else                          | Miscellaneous         |
+| Issue                                    | Category              | Violation Codes                                                                                                                                                                                             |
+| ---------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Trash/debris                             | Curb appeal           | NSWLTRASH, NSZTRASH02, NSO3005                                                                                                                                                                              |
+| Accumulated mail                         | Curb appeal           |                                                                                                                                                                                                             |
+| Overgrown grass                          | Curb appeal           | NSWLWEED1, NSWLWEED, NSWLWEED2, NSWLWEED3, NSWLWEED4                                                                                                                                                        |
+| Accumulated dead leaves                  | Curb appeal           | NSWLWEED1, NSWLWEED, NSWLWEED2, NSWLWEED3, NSWLWEED4                                                                                                                                                        |
+| Overgrown or dead shrubbery              | Curb appeal           | NSWLWEED1, NSWLWEED, NSWLWEED2, NSWLWEED3, NSWLWEED4                                                                                                                                                        |
+| Invasive plants                          | Curb appeal           | NSWLWEED1, NSWLWEED, NSWLWEED2, NSWLWEED3, NSWLWEED4                                                                                                                                                        |
+| Dead grass                               | Curb appeal           | NSWLWEED1, NSWLWEED, NSWLWEED2, NSWLWEED3, NSWLWEED4                                                                                                                                                        |
+| Broken or missing mailboxes              | Curb appeal           |                                                                                                                                                                                                             |
+| Unsecured, broken or boarded doors       | Structural factors    | NSZDOOR06, NSDOOR01, NSACCSTR01, NSZDOOR01, NSZDOOR07, NSZACSTR01, NSDOOR08, NSDOOR05, NSDOOR12                                                                                                             |
+| Damaged steps or rails                   | Structural factors    | NSZRAILS03, NSRAIL06, NSZRAILS02, NSZRAILS01, NSRAIL05, NSRAIL07, NSZRAILS04, NSZRAILS05, NSRAIL04, NSZSTAIR02, NSZSTAIR03, NSZSTAIR04, NSZSTAIR01                                                          |
+| Damaged roofs                            | Structural factors    | NSZROOF05, NSROOF07, NSZROOF04, NSZROOF03, NSROOF04, NSSUPPORT5, NSROOF02, NSROOF01, NSZPORCH05, NSZROOF02, NSACCSTR05, NSROOF08, NSZROOF06, NSPORCH07, NSZACSTR04, NSROOF05, NSROOF03, NSZROOF01, NSROOF06 |
+| Damaged fences                           | Structural factors    | NSZFENCE01, NSZFENCE05, NSZFENCE04, NSFENCE01, NSZFENCE02, NSFENCE07, NSZFENCE03                                                                                                                            |
+| Holes in structure                       | Structural factors    | NSZWALL05, NSZWALL11, NSXWLSTC03, NSEXTWAL02                                                                                                                                                                |
+| Wood rot                                 | Structural factors    | NSZEAVES02, NSWINDOW04, NSZWIND01, NSZDOOR02, NSEAVES02                                                                                                                                                     |
+| Trespassing or warning signs             | Signage and Occupancy |                                                                                                                                                                                                             |
+| Signage marketing property as distressed | Signage and Occupancy |                                                                                                                                                                                                             |
+| Absence of professional “For Sale” sign  | Signage and Occupancy |                                                                                                                                                                                                             |
+| Broken or discarded signage              | Signage and Occupancy |                                                                                                                                                                                                             |
+| Unauthorized occupancy of REO property   | Signage and Occupancy |                                                                                                                                                                                                             |
+| Graffiti                                 | Paint and siding      | NSGRAF02, NSGRAF01, NSGRAF03, NSGRAF04, NSGRAF05                                                                                                                                                            |
+| Peeling or chipped paint                 | Paint and siding      | NSZPAINT04, NSZPAINT02, NSACCSTR04, NSZACSTR03, NSEXTWAL05, NSEXTWAL06, NSZPAINT01                                                                                                                          |
+| Damaged siding                           | Paint and siding      | NSEXTWAL07, NSZWALL06, NSEXTWAL03                                                                                                                                                                           |
+| Missing or damaged shutters              | Paint and siding      |                                                                                                                                                                                                             |
+| Missing or out of place gutters          | Gutters               | NSGUTTER01, NSZGUTT02, NSGUTTER06, NSZGUTT04                                                                                                                                                                |
+| Broken or hanging gutters                | Gutters               | NSGUTTER03, NSZGUTT01, NSGUTTER04, NSGUTTER05, NSZGUTT03                                                                                                                                                    |
+| Water damage                             | Water                 |                                                                                                                                                                                                             |
+| Presence of mold, algae or discoloration | Water                 |                                                                                                                                                                                                             |
+| Exposed, damaged or missing utilities    | Utilities             | NSPLUMB35, NSPLUMB08, NSSEWER02, NSSEWER01, NSSEWER04, NSPLUMB09, NSSEWER06, NSELECT06, NSELECT12, NSDBELECTRIC, NSELECT31, NSEXELTFIX, NSELECT07, NSSTOVE02, NSHEAT06                                      |
+| Everything else                          | Miscellaneous         |                                                                                                                                                                                                             |
