@@ -116,7 +116,7 @@ class PropertyViolation:
         self.days_open = days_open
         self.violation = violation
         self.ordinance = ordinance
-        self.violatoin_entry_date = violation_entry_date
+        self.violation_entry_date = violation_entry_date
         self.address = address
         self.county = county
         self.state = state
@@ -209,3 +209,33 @@ class PropertyViolation:
     @property
     def is_closed(self):
         return self.status == PropertyViolation.STATUS_CLOSED
+
+    @property
+    def as_csv(self):
+        fields = [
+            "%d" % self.id_,
+            "%d" % self.case_id,
+            '"%s"' % self.status,
+            '"%s"' % self.case_opened.strftime('%Y-%m-%d'),
+            '"%s"' % self.case_closed.strftime('%Y-%m-%d'),
+            "%d" % self.days_open,
+            '"%s"' % self.violation_entry_date.strftime('%Y-%m-%d'),
+            '"%s"' % self.address,
+            '"%s"' % self.county,
+            '"%s"' % self.state,
+            "%d" % self.zip_code,
+            '%s' % self.coordinates.lat,
+            '%s' % self.coordinates.lon,
+            "%d" % self.pin,
+            '"%s"' % self.council_district,
+            '"%s"' % self.police_district,
+            '"%s"' % self.inspection_area,
+            '"%s"' % self.neighborhood,
+            '"%s"' % self.mapping_location,
+            '"%s"' % self.code.code,
+            '"%s"' % self.code.description,
+            '%d' % self.ordinance.chapter,
+            '"%s"' % self.ordinance.ordinance,
+        ]
+
+        return ','.join(fields)
