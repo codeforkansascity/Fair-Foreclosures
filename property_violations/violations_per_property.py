@@ -92,6 +92,20 @@ def get_violations_per_property(app_token, properties, debug=False):
     return results
 
 def calculate_violation_stats(violations_per_property, legal_brief_violation_codes):
+    """Calculates a score for a given property based on its violations.
+
+    Currently the scoring algorithm works as follows:
+        - If there are no violations, the score is 0
+        - For each day during the given period, we calculate a score as follows:
+            - Add 1 point for each violation open on that day
+            - If the violation is still currently open, add 2 points
+            - If the violation is one of the violations we've identified as
+                relevant based on the Chicago lawsuit brief, add 2 points
+        - Calculate the average of these daily scores to give an overall score for the property
+
+    The function also returns the total number of violations and the average duration
+    for all violations found during the given period.
+    """
     results = {}
 
     for kiva_pin, property_data in violations_per_property.items():
