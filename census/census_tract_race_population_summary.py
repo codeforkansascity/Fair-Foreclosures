@@ -20,14 +20,7 @@ if __name__ == '__main__':
         Census.ALL,
     )
 
-    races = [
-        CensusTractRacePopulation.RACE_WHITE,
-        CensusTractRacePopulation.RACE_BLACK,
-        CensusTractRacePopulation.RACE_AMERICAN_INDIAN,
-        CensusTractRacePopulation.RACE_ASIAN,
-        CensusTractRacePopulation.RACE_NATIVE_HAWAIIAN,
-        CensusTractRacePopulation.RACE_OTHER,
-    ]
+    races = CensusTractRacePopulation.get_all_races()
 
     rows = []
     header_titles = []

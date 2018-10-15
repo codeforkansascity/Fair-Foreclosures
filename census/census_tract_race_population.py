@@ -44,14 +44,7 @@ class CensusTractRacePopulation:
                                          CensusTractRacePopulation.VARIABLE_SUFFIX_ESTIMATE
         self.population_total_est = int(census_json_data[population_total_variable_name])
 
-        race_variable_prefixes = [
-            CensusTractRacePopulation.RACE_WHITE,
-            CensusTractRacePopulation.RACE_BLACK,
-            CensusTractRacePopulation.RACE_AMERICAN_INDIAN,
-            CensusTractRacePopulation.RACE_ASIAN,
-            CensusTractRacePopulation.RACE_NATIVE_HAWAIIAN,
-            CensusTractRacePopulation.RACE_OTHER,
-        ]
+        race_variable_prefixes = CensusTractRacePopulation.get_all_races()
 
         variable_suffixes = [
             CensusTractRacePopulation.VARIABLE_SUFFIX_ESTIMATE,
@@ -105,6 +98,17 @@ class CensusTractRacePopulation:
             return 'Some other race'
 
         return ''
+
+    @staticmethod
+    def get_all_races():
+        return [
+            CensusTractRacePopulation.RACE_WHITE,
+            CensusTractRacePopulation.RACE_BLACK,
+            CensusTractRacePopulation.RACE_AMERICAN_INDIAN,
+            CensusTractRacePopulation.RACE_ASIAN,
+            CensusTractRacePopulation.RACE_NATIVE_HAWAIIAN,
+            CensusTractRacePopulation.RACE_OTHER,
+        ]
 
     @staticmethod
     def fetch(api_key, state, county, tract):
