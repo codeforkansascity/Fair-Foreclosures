@@ -1,4 +1,6 @@
 from census import Census
+import json
+import requests
 from us import states
 
 class CensusTractRacePopulation:
@@ -136,3 +138,31 @@ class CensusTractRacePopulation:
         )
 
         return [CensusTractRacePopulation(result) for result in results]
+
+    @staticmethod
+    def fetch_by_address(api_key, address):
+        # Use the Census geocoder service to try to find the census tract for
+        # this address.
+        # https://geocoding.geo.census.gov/geocoder/Geocoding_Services_API.html
+        url = 'https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress'
+        params = {
+            'address': address,
+            'benchmark': 'Public_AR_Current',
+            'vintage': 'Current_Current',
+            'format': 'json',
+        }
+
+        geocoder_response = requests.get(url, params=params)
+        try:
+            geographies = json.loads(geocoder_response.text)
+            census_tract = geographies['result']['addressMatches'][0]['geographies']['Census Tracts'][0]
+        except:
+            return None
+
+        tracts = CensusTractRacePopulation.fetch(
+            api_key,
+            census_tract['STATE'],
+            census_tract['COUNTY'],
+            census_tract['TRACT'],
+        )
+        return tracts[0]
