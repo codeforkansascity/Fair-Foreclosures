@@ -2,9 +2,12 @@ from dateutil.parser import parse
 from sodapy import Socrata
 
 class DangerousBuildingException(Exception):
+    """An exception that may bbe raised by the DangerousBuilding class."""
     pass
 
 class Coordinates:
+    """A pair of latitude/longitude coordinates."""
+
     def __init__(self, lat, lon):
         self.lat = lat
         self.lon = lon
@@ -13,6 +16,14 @@ class Coordinates:
         return 'Coordintes: (%s, %s)' % (str(self.lat), str(self.lon))
 
 class DangerousBuilding:
+    """A dangerous building record.
+
+    This class represents a single dangerous building record from the KCMO Open
+    Data API.
+
+    https://data.kcmo.org/Property/Dangerous-Buildings-List/ax3m-jhxx
+    """
+
     API_DATASET_NAME = 'data.kcmo.org'
     API_RESOURCE_ID = 'rm2v-mbk5'
 
@@ -53,6 +64,9 @@ class DangerousBuilding:
 
     @staticmethod
     def from_json(json_data):
+        """Convert JSON data (obtained from the KCMO Open Data API) to a
+        DangerousBuilding object.
+        """
 
         def to_date(value):
             return parse(value) if value else None
@@ -81,7 +95,13 @@ class DangerousBuilding:
         return dangerous_building
 
     @staticmethod
-    def fetch(app_token, search_params):
+    def fetch(app_token, search_params, limit=5000):
+        """Fetch a list of DangerousBuilding objects from the KCMO Open Data
+        API. `search_params` is a list of search critera as allowed by the
+        Socrata SoQL query language (https://dev.socrata.com/docs/queries/).
+        All given parameters will be combined using 'AND' in the query.
+        """
+
         with Socrata(DangerousBuilding.API_DATASET_NAME, app_token) as client:
             where_clause = ' and '.join(search_params)
 
@@ -89,12 +109,18 @@ class DangerousBuilding:
             dangerous_buildings = client.get(
                 DangerousBuilding.API_RESOURCE_ID,
                 where=where_clause,
+                limit=limit,
             )
 
         return [DangerousBuilding.from_json(rec) for rec in dangerous_buildings]
 
     @staticmethod
     def fetch_by_address(app_token, address):
+        """Fetch a list of DangerousBuilding objects from the KCMO Open Data
+        API for a single address. Partial addresses can be given, but must
+        match the beginning of the street address.
+        """
+
         return DangerousBuilding.fetch(
             app_token,
             ["address like '%s%%'" % address],
@@ -102,6 +128,10 @@ class DangerousBuilding:
 
     @staticmethod
     def fetch_by_pin(app_token, pin):
+        """Fetch a list of DangerousBuilding objects from the KCMO Open Data
+        API for a single KIVA pin.
+        """
+
         return DangerousBuilding.fetch(
             app_token,
             ["kivapin = %d" % pin],
@@ -109,6 +139,8 @@ class DangerousBuilding:
 
     @property
     def as_csv(self):
+        """Returns a string containing this object's properties in CSV format."""
+
         fields = [
             "%d" % self.casenumber,
             '"%s"' % self.address,

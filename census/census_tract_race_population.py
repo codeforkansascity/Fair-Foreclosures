@@ -4,23 +4,31 @@ import requests
 from us import states
 
 class CensusTractRacePopulation:
-    # Census ACS5 Data Profile dataset documentation
-    # https://api.census.gov/data/2016/acs/acs5/profile/variables.html
-    # Relevant Census Variables:
-    #     DP05_0058E:  Estimate > RACE > Race alone or in combination with one or more other races > Total population
-    #     DP05_0058PE: Percent > RACE > Race alone or in combination with one or more other races > Total population
-    #     DP05_0059E:  Estimate > RACE > White
-    #     DP05_0059PE: Percent > RACE > White
-    #     DP05_0060E:  Estimate > RACE > Black or African American
-    #     DP05_0060PE: Percent > RACE > Black or African American
-    #     DP05_0061E:  Estimate > RACE > American Indian and Alaska Native
-    #     DP05_0061PE: Percent > RACE > American Indian and Alaska Native
-    #     DP05_0062E:  Estimate > RACE > Asian
-    #     DP05_0062PE: Percent > RACE > Asian
-    #     DP05_0063E:  Estimate > RACE > Native Hawaiian and Other Pacific Islander
-    #     DP05_0063PE: Percent > RACE > Native Hawaiian and Other Pacific Islander
-    #     DP05_0064E:  Estimate > RACE > Some other race
-    #     DP05_0064PE: Percent > RACE > Some other race
+    """Race population data for a census tract.
+
+    This class provides some constants and methods to make it easier to work
+    with race population data for census tracts in the KCMO area. Each instance
+    of the class represents the data from the ACS5DP dataset for a single
+    census tract.
+
+    Census ACS5 Data Profile dataset documentation
+    https://api.census.gov/data/2016/acs/acs5/profile/variables.html
+    Relevant Census Variables:
+        DP05_0058E:  Estimate > RACE > Race alone or in combination with one or more other races > Total population
+        DP05_0058PE: Percent > RACE > Race alone or in combination with one or more other races > Total population
+        DP05_0059E:  Estimate > RACE > White
+        DP05_0059PE: Percent > RACE > White
+        DP05_0060E:  Estimate > RACE > Black or African American
+        DP05_0060PE: Percent > RACE > Black or African American
+        DP05_0061E:  Estimate > RACE > American Indian and Alaska Native
+        DP05_0061PE: Percent > RACE > American Indian and Alaska Native
+        DP05_0062E:  Estimate > RACE > Asian
+        DP05_0062PE: Percent > RACE > Asian
+        DP05_0063E:  Estimate > RACE > Native Hawaiian and Other Pacific Islander
+        DP05_0063PE: Percent > RACE > Native Hawaiian and Other Pacific Islander
+        DP05_0064E:  Estimate > RACE > Some other race
+        DP05_0064PE: Percent > RACE > Some other race
+    """
 
     COUNTY_CODE_JACKSON_MO = '095'
 
@@ -46,11 +54,6 @@ class CensusTractRacePopulation:
 
         race_variable_prefixes = CensusTractRacePopulation.get_all_races()
 
-        variable_suffixes = [
-            CensusTractRacePopulation.VARIABLE_SUFFIX_ESTIMATE,
-            CensusTractRacePopulation.VARIABLE_SUFFIX_ESTIMATE_PERCENT,
-        ]
-
         self.population_by_race_est = {}
         self.population_by_race_pctg = {}
 
@@ -65,13 +68,23 @@ class CensusTractRacePopulation:
             self.population_by_race_pctg[race_prefix] = percent
 
     def get_population_estimate_for_race(self, race):
+        """A convenience method for obtaining the estimated population for a
+        given race in this census tract.
+        """
+
         return self.population_by_race_est[race]
 
     def get_population_estimate_percentage_for_race(self, race):
+        """A convenience method for obtaining the estimated population percentage
+        for a given race in this census tract.
+        """
+
         return self.population_by_race_pctg[race]
 
     @property
     def majority_race(self):
+        """Which race has the highest population in this census tract?"""
+
         max_population_race = None
         max_population = 0
 
@@ -84,6 +97,10 @@ class CensusTractRacePopulation:
 
     @staticmethod
     def get_race_display(race):
+        """Given a census variable prefix, return the associated race name, as
+        defined by census ACS5DP dataset.
+        """
+
         if race == CensusTractRacePopulation.RACE_WHITE:
             return 'White'
         elif race == CensusTractRacePopulation.RACE_BLACK:
@@ -101,6 +118,11 @@ class CensusTractRacePopulation:
 
     @staticmethod
     def get_all_races():
+        """Returns a list of the 6 variable prefixes used to identify race
+        population estimates. This can be helpful for cycling through the
+        dataset results for all races.
+        """
+
         return [
             CensusTractRacePopulation.RACE_WHITE,
             CensusTractRacePopulation.RACE_BLACK,
@@ -112,6 +134,10 @@ class CensusTractRacePopulation:
 
     @staticmethod
     def fetch(api_key, state, county, tract):
+        """Fetch a list of CensusTractRacePopulation objects from the Census
+        API for a given state + county + tract combination.
+        """
+
         client = Census(api_key)
 
         variable_prefixes = [
@@ -145,9 +171,12 @@ class CensusTractRacePopulation:
 
     @staticmethod
     def fetch_by_address(api_key, address):
-        # Use the Census geocoder service to try to find the census tract for
-        # this address.
-        # https://geocoding.geo.census.gov/geocoder/Geocoding_Services_API.html
+        """Fetch a list of CensusTractRacePopulation objects from the Census
+        API for a given address.  Use the Census geocoder service to try to find
+        the census tract for this address.
+        https://geocoding.geo.census.gov/geocoder/Geocoding_Services_API.html
+        """
+
         url = 'https://geocoding.geo.census.gov/geocoder/geographies/onelineaddress'
         params = {
             'address': address,
@@ -159,8 +188,12 @@ class CensusTractRacePopulation:
         geocoder_response = requests.get(url, params=params)
         try:
             geographies = json.loads(geocoder_response.text)
+        except json.decoder.JSONDecodeError:
+            return None
+
+        try:
             census_tract = geographies['result']['addressMatches'][0]['geographies']['Census Tracts'][0]
-        except:
+        except (KeyError, IndexError):
             return None
 
         tracts = CensusTractRacePopulation.fetch(
@@ -169,4 +202,5 @@ class CensusTractRacePopulation:
             census_tract['COUNTY'],
             census_tract['TRACT'],
         )
+
         return tracts[0]

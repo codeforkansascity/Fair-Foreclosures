@@ -3,9 +3,12 @@ from dateutil.parser import parse
 from sodapy import Socrata
 
 class ServiceRequestCallException(Exception):
+    """An exception that may be raised by the ServiceRequestCall class."""
     pass
 
 class Coordinates:
+    """A pair of latitude/longitude coordinates."""
+
     def __init__(self, lat, lon):
         self.lat = lat
         self.lon = lon
@@ -14,6 +17,15 @@ class Coordinates:
         return 'Coordintes: (%s, %s)' % (str(self.lat), str(self.lon))
 
 class ServiceRequestCall:
+    """A service request call, also known as a 311 call.
+
+    This class represents a record from the KCMO 311 Call Center Service
+    Requests dataset. This call center fields various service requests from
+    KCMO residents.
+
+    https://data.kcmo.org/311/311-Call-Center-Service-Requests/7at3-sxhp
+    """
+
     API_DATASET_NAME = 'data.kcmo.org'
     API_RESOURCE_ID = 'cyqf-nban'
 
@@ -70,6 +82,9 @@ class ServiceRequestCall:
 
     @staticmethod
     def from_json(json_data):
+        """Convert JSON data (obtained from the KCMO Open Data API) to a
+        ServiceRequestCall object.
+        """
 
         def to_bool(value):
             return value == 'Y'
@@ -126,7 +141,15 @@ class ServiceRequestCall:
         return service_request
 
     @staticmethod
-    def fetch(app_token, search_params):
+    def fetch(app_token, search_params, limit=5000):
+        """Fetch a list of ServiceRequestCall objects from the KCMO Open Data
+        API. `search_params` is a list of search critera as allowed by the
+        Socrata SoQL query language (https://dev.socrata.com/docs/queries/).
+        All given parameters will be combined using 'AND' in the query.
+        By default, we limit the results to 5000 records but you can specify
+        a different limit with the `limit` parameter.
+        """
+
         with Socrata(ServiceRequestCall.API_DATASET_NAME, app_token) as client:
             where_clause = ' and '.join(search_params)
 
@@ -134,15 +157,21 @@ class ServiceRequestCall:
             service_requests = client.get(
                 ServiceRequestCall.API_RESOURCE_ID,
                 where=where_clause,
+                limit=limit,
             )
 
         return [ServiceRequestCall.from_json(rec) for rec in service_requests]
 
     @staticmethod
     def fetch_by_address(app_token, address):
+        """Fetch a list of ServiceRequestCall objects from the KCMO Open Data
+        API for a single address. Partial addresses can be given, but must
+        match the beginning of the street address.
+        """
+
         return ServiceRequestCall.fetch(
             app_token,
-            ["address like '%s%%'" % address.upper()],
+            ["street_address like '%s%%'" % address.upper()],
         )
 
     @property

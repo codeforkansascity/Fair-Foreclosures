@@ -1,10 +1,14 @@
+from city_ordinance import CityOrdinance
 from dateutil.parser import parse
 from sodapy import Socrata
 
 class PropertyViolationException(Exception):
+    """An exception that may be raised by the PropertyViolation class."""
     pass
 
 class Coordinates:
+    """A pair of latitude/longitude coordinates."""
+
     def __init__(self, lat, lon):
         self.lat = lat
         self.lon = lon
@@ -13,74 +17,44 @@ class Coordinates:
         return 'Coordintes: (%s, %s)' % (str(self.lat), str(self.lon))
 
 class PropertyViolationCode:
+    """A property violation code.
+
+    Includes properties to help identify certain categories of violations. More
+    properties can be added to the class as necessary.
+    """
+
     def __init__(self, code, description):
         self.code = code
         self.description = description
+
+    @property
+    def is_electrical_violation(self):
+        return self.code.startswith('NSELECT')
+
+    @property
+    def is_fence_violation(self):
+        return self.code.startswith('NSFENCE')
 
     @property
     def is_infestation_violation(self):
         return self.code.startswith('NSINFEST')
 
     @property
-    def is_fence_violation(self):
-        return self.code.startswith('NSFENCE')
+    def is_plumbing_violation(self):
+        return self.code.startswith('NSPLUMB')
 
     def __str__(self):
         return 'Code: %s (%s)' % (self.code, self.description)
 
-class PropertyViolationOrdinance:
-    CHAPTER_FENCE = 'Fences and Walls'
-    CHAPTER_NUISANCE = 'Nuisances'
-    CHAPTER_PROPERTY_MAINTENANCE = 'Property Maintenance Code'
-    CHAPTER_SOLID_WASTE = 'Solid Waste'
-    CHAPTER_STREET = 'Streets, Sidewalks and Public Places'
-
-    def __init__(self, chapter, ordinance):
-        self.chapter = chapter
-        self.ordinance = ordinance
-
-    @property
-    def chapter_title(self):
-        title = ''
-
-        if self.chapter == 27:
-            title = PropertyViolationOrdinance.CHAPTER_FENCE
-        elif self.chapter == 48:
-            title = PropertyViolationOrdinance.CHAPTER_NUISANCE
-        elif self.chapter == 56:
-            title = PropertyViolationOrdinance.CHAPTER_PROPERTY_MAINTENANCE
-        elif self.chapter == 62:
-            title = PropertyViolationOrdinance.CHAPTER_SOLID_WASTE
-        elif self.chapter == 64:
-            title = PropertyViolationOrdinance.CHAPTER_STREET
-        else:
-            title = '(Unknown Ordinance Chapter)'
-
-        return title
-
-    @property
-    def severity(self):
-        severity = 0.0
-
-        if self.chapter == 27:
-            severity = 0.6
-        elif self.chapter == 48:
-            severity = 0.3
-        elif self.chapter == 56:
-            severity = 1.0
-        elif self.chapter == 62:
-            severity = 1.0
-        elif self.chapter == 64:
-            severity = 0.6
-        else:
-            severity = 1.0
-
-        return severity
-
-    def __str__(self):
-        return 'Ordinance: %s (%s)' % (self.chapter, self.ordinance)
-
 class PropertyViolation:
+    """A property violation.
+
+    This class represents a single KCMO property violation and includes methods
+    to obtain property violations from the KCMO Open Data API.
+
+    https://data.kcmo.org/Housing/Property-Violations/nhtf-e75a
+    """
+
     API_DATASET_NAME = 'data.kcmo.org'
     API_RESOURCE_ID = 'ha6k-d6qu'
 
@@ -131,6 +105,9 @@ class PropertyViolation:
 
     @staticmethod
     def from_json(json_data):
+        """Convert JSON data (obtained from the KCMO Open Data API) to a
+        PropertyViolation object.
+        """
 
         def to_date(value):
             return parse(value) if value else None
@@ -168,7 +145,7 @@ class PropertyViolation:
             json_data.get('violation_description'),
         )
 
-        violation.ordinance = PropertyViolationOrdinance(
+        violation.ordinance = CityOrdinance(
             to_int(json_data.get('chapter')),
             json_data.get('ordinance'),
         )
@@ -176,7 +153,15 @@ class PropertyViolation:
         return violation
 
     @staticmethod
-    def fetch(app_token, search_params):
+    def fetch(app_token, search_params, limit=5000):
+        """Fetch a list of PropertyViolation objects from the KCMO Open Data
+        API. `search_params` is a list of search critera as allowed by the
+        Socrata SoQL query language (https://dev.socrata.com/docs/queries/).
+        All given parameters will be combined using 'AND' in the query.
+        By default, we limit the results to 5000 records but you can specify
+        a different limit with the `limit` parameter.
+        """
+
         with Socrata(PropertyViolation.API_DATASET_NAME, app_token) as client:
             where_clause = ' and '.join(search_params)
 
@@ -184,12 +169,18 @@ class PropertyViolation:
             violation_records = client.get(
                 PropertyViolation.API_RESOURCE_ID,
                 where=where_clause,
+                limit=limit,
             )
 
         return [PropertyViolation.from_json(rec) for rec in violation_records]
 
     @staticmethod
     def fetch_by_address(app_token, address):
+        """Fetch a list of PropertyViolation objects from the KCMO Open Data
+        API for a single address. Partial addresses can be given, but must
+        match the beginning of the street address.
+        """
+
         return PropertyViolation.fetch(
             app_token,
             ["address like '%s%%'" % address.upper()],
@@ -197,6 +188,10 @@ class PropertyViolation:
 
     @staticmethod
     def fetch_by_pin(app_token, pin):
+        """Fetch a list of PropertyViolation objects from the KCMO Open Data
+        API for a single KIVA pin.
+        """
+
         return PropertyViolation.fetch(
             app_token,
             ["pin = %d" % pin],
@@ -212,12 +207,14 @@ class PropertyViolation:
 
     @property
     def as_csv(self):
+        """Returns a string containing this object's properties in CSV format."""
+
         fields = [
             "%d" % self.id_,
             "%d" % self.case_id,
             '"%s"' % self.status,
             '"%s"' % self.case_opened.strftime('%Y-%m-%d'),
-            '"%s"' % self.case_closed.strftime('%Y-%m-%d'),
+            '"%s"' % self.case_closed.strftime('%Y-%m-%d') if self.case_closed else '',
             "%d" % self.days_open,
             '"%s"' % self.violation_entry_date.strftime('%Y-%m-%d'),
             '"%s"' % self.address,
