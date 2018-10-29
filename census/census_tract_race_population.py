@@ -30,6 +30,8 @@ class CensusTractRacePopulation:
         DP05_0064PE: Percent > RACE > Some other race
     """
 
+    # This is a FIPS code, a national system for coding counties:
+    # https://en.wikipedia.org/wiki/FIPS_county_code
     COUNTY_CODE_JACKSON_MO = '095'
 
     CENSUS_VARIABLE_TOTAL_POPULATION = 'DP05_0058'

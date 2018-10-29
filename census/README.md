@@ -9,6 +9,12 @@ Examples:
 ```python
 >>> from census_tract_race_population import CensusTractRacePopulation
 >>> tract = CensusTractRacePopulation.fetch_by_address([api token], '3412 E 29th St, Kansas City, MO')
+>>> print('State: %s (%s)' % (tract.state.name, tract.state.abbr))
+State: Missouri (MO)
+>>> print('County FIPS code: %s' % tract.county)
+County FIPS code: 095
+>>> print('Census Tract: %s' % tract.tract)
+Census Tract: 016500
 >>> print(tract.population_total_est)
 1829
 >>> for race in CensusTractRacePopulation.get_all_races():
